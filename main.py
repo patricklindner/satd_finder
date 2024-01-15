@@ -4,6 +4,12 @@ import sys
 import requests
 import re
 
+class Commit:
+  def __init__(self, sha, message, date) -> None:
+    self.sha = sha
+    self.message = message
+    self.date = date
+
 class Issue:
   def __init__(self, id, title, body, created_at, closed_at) -> None:
     self.id = id
@@ -11,6 +17,12 @@ class Issue:
     self.body = body
     self.created_at = created_at
     self.closed_at = closed_at
+
+class Release:
+  def __init__(self, id, created_at, published_at) -> None:
+    self.id = id
+    self.created_at = created_at
+    self.published_at = published_at
 
 """
 Load the Github authentication token from the environment.
@@ -38,11 +50,44 @@ def prepare_headers() -> dict:
   } 
 
 """
+Fetch commits from Github.
+"""
+def fetch_commits(
+  repository_url: str, 
+  page: int = 1, 
+  per_page: int = 100,
+) -> list[Commit]:
+  params = {
+    'page': page,
+    'per_page': per_page,
+  }
+
+  url = prepare_url(repository_url, 'commits')
+  headers = prepare_headers()
+
+  response = requests.get(url, headers=headers, params=params)
+  data = response.json()
+
+  return [
+    Commit(
+      sha=item['sha'],
+      message=item['commit']['message'],
+      date=item['commit']['author']['date'],
+    ) for item in data
+  ] 
+
+"""
 Fetch issues from Github.
 """
-def fetch_issues(repository_url: str) -> list[Issue]:
+def fetch_issues(
+  repository_url: str,
+  page: int = 1,
+  per_page: int = 100,
+) -> list[Issue]:
   params = {
     'state': 'closed',
+    'page': page,
+    'per_page': per_page,
   }
 
   url = prepare_url(repository_url, 'issues')
@@ -62,6 +107,33 @@ def fetch_issues(repository_url: str) -> list[Issue]:
   ]
 
 """
+Fetch releases from Github.
+"""
+def fetch_releases(
+  repository_url: str, 
+  page: int = 1, 
+  per_page: int = 100,
+) -> list[Release]:
+  params = {
+    'page': page,
+    'per_page': per_page,
+  }
+
+  url = prepare_url(repository_url, 'releases')
+  headers = prepare_headers()
+
+  response = requests.get(url, headers=headers, params=params)
+  data = response.json()
+
+  return [
+    Release(
+      id=item['id'],
+      created_at=item['created_at'],
+      published_at=item['published_at'],
+    ) for item in data
+  ]
+
+"""
 Entrypoint.
 """
 def main() -> None:
@@ -73,9 +145,9 @@ def main() -> None:
     
   # The repository URL is passed as the first argument
   repository_url = sys.argv[1]
-  issues = fetch_issues(repository_url)
+  commits = fetch_commits(repository_url)
 
-  print(len(issues))
+  print(commits[0].date)
 
 if __name__ == '__main__':
     main()
