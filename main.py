@@ -1,4 +1,5 @@
 import dotenv
+import csv
 import os
 import sys
 import requests
@@ -9,6 +10,9 @@ class Commit:
     self.sha = sha
     self.message = message
     self.date = date
+  
+  def __iter__(self):
+    return iter([self.sha, self.message, self.date])
 
 class Issue:
   def __init__(self, id, title, body, created_at, closed_at) -> None:
@@ -18,11 +22,17 @@ class Issue:
     self.created_at = created_at
     self.closed_at = closed_at
 
+  def __iter__(self):
+    return iter([self.id, self.title, self.body, self.created_at, self.closed_at])
+
 class Release:
   def __init__(self, id, created_at, published_at) -> None:
     self.id = id
     self.created_at = created_at
     self.published_at = published_at
+
+  def __iter__(self):
+    return iter([self.id, self.created_at, self.published_at])
 
 """
 Load the Github authentication token from the environment.
@@ -134,6 +144,26 @@ def fetch_releases(
   ]
 
 """
+Fetch the data from Github.
+"""
+def fetch_data(repository_url, fetcher):
+  data = []
+  page = 1
+
+  while True:
+    batch = fetcher(repository_url, page)
+    data = data + batch
+
+    if len(batch) < 100:
+      break
+
+    page = page + 1
+  
+  with open('output.csv', 'w') as file:
+    file = csv.writer(file)
+    file.writerows(data)
+
+"""
 Entrypoint.
 """
 def main() -> None:
@@ -145,9 +175,7 @@ def main() -> None:
     
   # The repository URL is passed as the first argument
   repository_url = sys.argv[1]
-  commits = fetch_commits(repository_url)
-
-  print(commits[0].date)
+  fetch_data(repository_url, fetch_commits)
 
 if __name__ == '__main__':
     main()
