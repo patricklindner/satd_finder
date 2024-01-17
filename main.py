@@ -144,24 +144,51 @@ def fetch_releases(
   ]
 
 """
+Fetches the total number of commits for a repository on Github.
+"""
+def fetch_total_commits(
+  repository_url: str,
+) -> int:
+  params = {
+    'per_page': 1
+  }
+
+  url = prepare_url(repository_url, 'commits')
+  headers = prepare_headers()
+
+  response = requests.get(url, headers=headers, params=params)
+
+  # The header contains the total number of pages.
+  link_header = response.headers.get('Link')
+  last_link = re.findall(r'page=(\d+)>; rel="last"', link_header)
+
+  return int(last_link[0])
+
+"""
 Fetch the data from Github.
 """
 def fetch_data(repository_url, fetcher):
-  data = []
   page = 1
+  fetched = 0
 
-  while True:
-    batch = fetcher(repository_url, page)
-    data = data + batch
+  total_commits = fetch_total_commits(repository_url)
 
-    if len(batch) < 100:
-      break
-
-    page = page + 1
-  
   with open('output.csv', 'w') as file:
     file = csv.writer(file)
-    file.writerows(data)
+
+    while True:
+      batch = fetcher(repository_url, page)
+      file.writerows(batch)
+
+      # Print the progress of commits in percentage.
+      fetched = fetched + len(batch)
+      percentage = round((fetched / total_commits) * 100, 2)
+      print(percentage, '%')
+
+      if len(batch) < 100:
+        break
+
+      page = page + 1
 
 """
 Entrypoint.
