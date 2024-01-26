@@ -15,24 +15,24 @@ class Commit:
     return iter([self.sha, self.message, self.date])
 
 class Issue:
-  def __init__(self, id, title, body, created_at, closed_at) -> None:
+  def __init__(self, id, title, body, state, created_at, closed_at) -> None:
     self.id = id
     self.title = title
     self.body = body
+    self.state = state
     self.created_at = created_at
     self.closed_at = closed_at
 
   def __iter__(self):
-    return iter([self.id, self.title, self.body, self.created_at, self.closed_at])
+    return iter([self.id, self.title, self.body, self.state, self.created_at, self.closed_at])
 
-class Release:
-  def __init__(self, id, created_at, published_at) -> None:
-    self.id = id
-    self.created_at = created_at
-    self.published_at = published_at
+class Tag:
+  def __init__(self, name, sha) -> None:
+    self.name = name
+    self.sha = sha
 
   def __iter__(self):
-    return iter([self.id, self.created_at, self.published_at])
+    return iter([self.name, self.sha])
 
 """
 Load the Github authentication token from the environment.
@@ -95,7 +95,7 @@ def fetch_issues(
   per_page: int = 100,
 ) -> list[Issue]:
   params = {
-    'state': 'closed',
+    'state': 'all',
     'page': page,
     'per_page': per_page,
   }
@@ -111,58 +111,37 @@ def fetch_issues(
       id=item['id'],
       title=item['title'],
       body=item['body'],
+      state=item['state'],
       created_at=item['created_at'],
       closed_at=item['closed_at'],  
     ) for item in data
   ]
 
 """
-Fetch releases from Github.
+Fetch tags from Github.
 """
-def fetch_releases(
+def fetch_tags(
   repository_url: str, 
   page: int = 1, 
   per_page: int = 100,
-) -> list[Release]:
+) -> list[Tag]:
   params = {
     'page': page,
     'per_page': per_page,
   }
 
-  url = prepare_url(repository_url, 'releases')
+  url = prepare_url(repository_url, 'tags')
   headers = prepare_headers()
 
   response = requests.get(url, headers=headers, params=params)
   data = response.json()
 
   return [
-    Release(
-      id=item['id'],
-      created_at=item['created_at'],
-      published_at=item['published_at'],
+    Tag(
+      name=item['name'],
+      sha=item['commit']['sha'],
     ) for item in data
   ]
-
-"""
-Fetches the total number of commits for a repository on Github.
-"""
-def fetch_total_commits(
-  repository_url: str,
-) -> int:
-  params = {
-    'per_page': 1
-  }
-
-  url = prepare_url(repository_url, 'commits')
-  headers = prepare_headers()
-
-  response = requests.get(url, headers=headers, params=params)
-
-  # The header contains the total number of pages.
-  link_header = response.headers.get('Link')
-  last_link = re.findall(r'page=(\d+)>; rel="last"', link_header)
-
-  return int(last_link[0])
 
 """
 Fetch the data from Github.
@@ -171,8 +150,6 @@ def fetch_data(repository_url, fetcher):
   page = 1
   fetched = 0
 
-  total_commits = fetch_total_commits(repository_url)
-
   with open('output.csv', 'w') as file:
     file = csv.writer(file)
 
@@ -180,10 +157,8 @@ def fetch_data(repository_url, fetcher):
       batch = fetcher(repository_url, page)
       file.writerows(batch)
 
-      # Print the progress of commits in percentage.
       fetched = fetched + len(batch)
-      percentage = round((fetched / total_commits) * 100, 2)
-      print(percentage, '%')
+      print('n=' + str(fetched), end='\r')
 
       if len(batch) < 100:
         break
@@ -202,7 +177,7 @@ def main() -> None:
     
   # The repository URL is passed as the first argument
   repository_url = sys.argv[1]
-  fetch_data(repository_url, fetch_commits)
+  fetch_data(repository_url, fetch_tags)
 
 if __name__ == '__main__':
     main()
