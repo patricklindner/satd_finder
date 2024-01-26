@@ -1,7 +1,7 @@
-import dotenv
 import csv
+from dotenv import load_dotenv
+from lib.github import fetch_tags
 import sys
-from github import  fetch_tags
 
 """
 Fetch the data from Github.
@@ -25,19 +25,12 @@ def fetch_data(repository_url, fetcher):
 
       page = page + 1
 
-"""
-Entrypoint.
-"""
-def main() -> None:
-  dotenv.load_dotenv()
+if __name__ == '__main__':
+  load_dotenv()
 
   if len(sys.argv) < 2:
     print('Please provide a repository URL as first argument.')
     exit(1)
-    
-  # The repository URL is passed as the first argument
+
   repository_url = sys.argv[1]
   fetch_data(repository_url, fetch_tags)
-
-if __name__ == '__main__':
-    main()

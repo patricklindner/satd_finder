@@ -1,7 +1,7 @@
 import os
 import requests
 import re
-from models import Commit, Tag, Issue
+from lib.models import Commit, Tag, Issue
 
 """
 Load the Github authentication token from the environment.
