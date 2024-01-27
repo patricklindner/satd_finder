@@ -7,8 +7,16 @@ class Commit:
   def __iter__(self):
     return iter([self.sha, self.message, self.date])
 
+class CommitFrequency:
+  def __init__(self, date, number_of_commits) -> None:
+    self.date = date
+    self.number_of_commits = number_of_commits
+
+  def __iter__(self):
+    return iter([self.date, self.number_of_commits])
+
 class Issue:
-  def __init__(self, id, title, body, state, created_at, closed_at) -> None:
+  def __init__(self, id, title, body, state, created_at, closed_at, pull_request) -> None:
     self.id = id
     self.title = title
     self.body = body
@@ -16,8 +24,22 @@ class Issue:
     self.created_at = created_at
     self.closed_at = closed_at
 
+    if pull_request is None:
+      self.is_pull_request = False
+      self.merged_at = None
+    else:
+      self.is_pull_request = True
+      self.merged_at = pull_request['merged_at']
+
   def __iter__(self):
-    return iter([self.id, self.title, self.body, self.state, self.created_at, self.closed_at])
+    return iter([self.id, self.title, self.body, self.state, self.created_at, self.closed_at, self.is_pull_request, self.merged_at])
+  
+class PullRequest:
+  def __init__(self, merged_at) -> None:
+    self.merged_at = merged_at
+  
+  def __iter__(self):
+    return iter([self.merged_at])
 
 class Tag:
   def __init__(self, name, sha) -> None:

@@ -1,4 +1,5 @@
 import os
+import csv
 import requests
 import re
 from lib.models import Commit, Tag, Issue
@@ -83,6 +84,7 @@ def fetch_issues(
       state=item['state'],
       created_at=item['created_at'],
       closed_at=item['closed_at'],  
+      pull_request=item.get('pull_request', None),
     ) for item in data
   ]
 
@@ -111,3 +113,25 @@ def fetch_tags(
       sha=item['commit']['sha'],
     ) for item in data
   ]
+
+"""
+Fetch the data from Github.
+"""
+def fetch_data(repository_url, fetcher):
+  page = 1
+  fetched = 0
+
+  with open('output.csv', 'w') as file:
+    file = csv.writer(file)
+
+    while True:
+      batch = fetcher(repository_url, page)
+      file.writerows(batch)
+
+      fetched = fetched + len(batch)
+      print('n=' + str(fetched), end='\r')
+
+      if len(batch) < 100:
+        break
+
+      page = page + 1
