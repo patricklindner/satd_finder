@@ -12,7 +12,7 @@ if __name__ == '__main__':
     """
 
     path = sys.argv[1]
-    name = path.split("/")[-1].split(".")[0]
+    name = path.split("/")[-1].split(".")[0].split("_")[0]
 
     DEF_LABELS = ['code|design-debt', 'requirement-debt', 'documentation-debt', 'test-debt']
 
