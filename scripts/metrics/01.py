@@ -6,7 +6,10 @@ from lib.models import Commit
 import sys
 
 """
-Calculate the commit frequency.
+Commit frequency.
+
+[x] Function that retrieves all commits for a single repository
+[x] Function that counts the number of commits per day
 """
 def main(file_path: str) -> None:
   frequency = defaultdict(int)
