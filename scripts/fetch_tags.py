@@ -2,6 +2,9 @@ from dotenv import load_dotenv
 from lib.github import fetch_tags, fetch_data
 import sys
 
+"""
+Fetches tags from Github and outputs to output.csv.
+"""
 def main(repository_url: str) -> None:
   fetch_data(repository_url, fetch_tags)
 

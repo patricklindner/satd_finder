@@ -2,6 +2,9 @@ from dotenv import load_dotenv
 from lib.github import fetch_issues, fetch_data
 import sys
 
+"""
+Fetches issues from Github and outputs to output.csv.
+"""
 def main(repository_url: str) -> None:
   fetch_data(repository_url, fetch_issues)
 

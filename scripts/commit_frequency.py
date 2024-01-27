@@ -5,6 +5,9 @@ from datetime import datetime
 from lib.models import Commit
 import sys
 
+"""
+Calculate the commit frequency.
+"""
 def main(file_path: str) -> None:
   frequency = defaultdict(int)
 
