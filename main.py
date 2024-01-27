@@ -165,7 +165,7 @@ def fetch_total_commits(
   return int(last_link[0])
 
 """
-Fetch the data from Github.
+Fetch the classified from Github.
 """
 def fetch_data(repository_url, fetcher):
   page = 1

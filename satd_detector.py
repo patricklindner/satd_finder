@@ -210,7 +210,7 @@ def get_params():
     parser.add_argument('--dropout', type=float, default=0.5,
                         help='the probability for dropout [default: 0.5]')
     parser.add_argument('--device', type=int, default=-1,
-                        help='device to use for iterate data, -1 mean cpu [default: -1]')
+                        help='device to use for iterate classified, -1 mean cpu [default: -1]')
     parser.add_argument('--no-cuda', action='store_true', default=False,
                         help='disable the gpu')
     args = parser.parse_args()
