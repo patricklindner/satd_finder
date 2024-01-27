@@ -2,7 +2,7 @@ from dotenv import load_dotenv
 from collections import defaultdict
 import csv
 from datetime import datetime
-from lib.models import Commit, CommitFrequency
+from lib.models import Commit
 import sys
 
 def main(file_path: str) -> None:
@@ -22,9 +22,7 @@ def main(file_path: str) -> None:
     file = csv.writer(file)
 
     for date, numberOfCommits in sorted(frequency.items()):
-      commit_frequency = CommitFrequency(date, numberOfCommits)
-
-      file.writerow(commit_frequency)
+      file.writerow([date, numberOfCommits])
 
 if __name__ == '__main__':
   load_dotenv()

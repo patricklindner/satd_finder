@@ -7,14 +7,6 @@ class Commit:
   def __iter__(self):
     return iter([self.sha, self.message, self.date])
 
-class CommitFrequency:
-  def __init__(self, date, number_of_commits) -> None:
-    self.date = date
-    self.number_of_commits = number_of_commits
-
-  def __iter__(self):
-    return iter([self.date, self.number_of_commits])
-
 class Issue:
   def __init__(self, id, title, body, state, created_at, closed_at, pull_request) -> None:
     self.id = id
