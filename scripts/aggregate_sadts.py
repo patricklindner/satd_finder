@@ -23,7 +23,7 @@ if __name__ == '__main__':
 
     timestamps = df["ts"].unique()
 
-    with open(f"../aggregated/{name}_aggregated.csv", mode="w") as result_file:
+    with open(f"../data/aggregated/{name}_aggregated.csv", mode="w") as result_file:
         writer = csv.writer(result_file)
         writer.writerow(["timestamp", *DEF_LABELS])
         for timestamp in timestamps:
