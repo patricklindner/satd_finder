@@ -6,7 +6,6 @@ import sys
 Fetches issues from Github and outputs to output.csv.
 """
 def main(repository_url: str) -> None:
-  print("Calling fetch_data")
   fetch_data(repository_url, fetch_issues)
 
 if __name__ == '__main__':
