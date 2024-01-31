@@ -2,7 +2,7 @@ import os
 import csv
 import requests
 import re
-from lib.models import Commit, Tag, Issue
+from lib.models import Commit, Tag, Issue, PullRequest
 
 """
 Load the Github authentication token from the environment.
@@ -56,6 +56,35 @@ def fetch_commits(
     ) for item in data
   ] 
 
+def fetch_prs(
+    repository_url: str,
+    page: int = 1,
+    per_page: int = 100,
+) -> list[PullRequest]:
+  params = {
+    'state': 'all',
+    'page': page,
+    'per_page': per_page,
+  }
+
+  url = prepare_url(repository_url, 'pulls')
+  headers = prepare_headers()
+
+  response = requests.get(url, headers=headers, params=params)
+  data = response.json()
+
+  return [
+    PullRequest(
+      id=item['id'],
+      title=item['title'],
+      body=item['body'],
+      state=item['state'],
+      created_at=item['created_at'],
+      closed_at=item['closed_at'],
+      merged_at=item['merged_at']
+    ) for item in data
+  ]
+
 """
 Fetch issues from Github.
 """
@@ -75,6 +104,21 @@ def fetch_issues(
 
   response = requests.get(url, headers=headers, params=params)
   data = response.json()
+
+  issues = []
+  for item in data:
+    if 'pull_request' not in item.keys():
+      issues.append(Issue(
+        id=item['id'],
+        title=item['title'],
+        body=item['body'],
+        state=item['state'],
+        created_at=item['created_at'],
+        closed_at=item['closed_at'],
+        pull_request=item.get('pull_request', None),
+      ))
+  
+  return issues
 
   return [
     Issue(
@@ -106,6 +150,7 @@ def fetch_tags(
 
   response = requests.get(url, headers=headers, params=params)
   data = response.json()
+  print(data)
 
   return [
     Tag(
@@ -121,7 +166,7 @@ def fetch_data(repository_url, fetcher):
   page = 1
   fetched = 0
 
-  with open('output.csv', 'w') as file:
+  with open('output.csv', 'w', encoding="utf-8") as file:
     file = csv.writer(file)
 
     while True:
@@ -131,7 +176,7 @@ def fetch_data(repository_url, fetcher):
       fetched = fetched + len(batch)
       print('n=' + str(fetched), end='\r')
 
-      if len(batch) < 100:
+      if len(batch) < 1:
         break
 
       page = page + 1
