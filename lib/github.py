@@ -76,6 +76,21 @@ def fetch_issues(
   response = requests.get(url, headers=headers, params=params)
   data = response.json()
 
+  issues = []
+  for item in data:
+    if 'pull_request' not in item.keys():
+      issues.append(Issue(
+        id=item['id'],
+        title=item['title'],
+        body=item['body'],
+        state=item['state'],
+        created_at=item['created_at'],
+        closed_at=item['closed_at'],
+        pull_request=item.get('pull_request', None),
+      ))
+  
+  return issues
+
   return [
     Issue(
       id=item['id'],
@@ -121,17 +136,18 @@ def fetch_data(repository_url, fetcher):
   page = 1
   fetched = 0
 
-  with open('output.csv', 'w') as file:
+  with open('output.csv', 'w', encoding="utf-8") as file:
     file = csv.writer(file)
 
     while True:
       batch = fetcher(repository_url, page)
+      print(len(batch))
       file.writerows(batch)
 
       fetched = fetched + len(batch)
       print('n=' + str(fetched), end='\r')
 
-      if len(batch) < 100:
+      if len(batch) < 1:
         break
 
       page = page + 1
