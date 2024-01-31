@@ -40,3 +40,16 @@ class Tag:
 
   def __iter__(self):
     return iter([self.name, self.sha])
+  
+class PullRequest:
+  def __init__(self, id, title, body, state, created_at, closed_at, merged_at) -> None:
+    self.id = id
+    self.title = title
+    self.body = body
+    self.state = state
+    self.created_at = created_at
+    self.closed_at = closed_at
+    self.merged_at = merged_at
+
+  def __iter__(self):
+    return iter([self.id, self.title, self.body, self.state, self.created_at, self.closed_at, self.merged_at])

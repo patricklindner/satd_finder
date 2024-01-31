@@ -2,7 +2,7 @@ import os
 import csv
 import requests
 import re
-from lib.models import Commit, Tag, Issue
+from lib.models import Commit, Tag, Issue, PullRequest
 
 """
 Load the Github authentication token from the environment.
@@ -55,6 +55,35 @@ def fetch_commits(
       date=item['commit']['author']['date'],
     ) for item in data
   ] 
+
+def fetch_prs(
+    repository_url: str,
+    page: int = 1,
+    per_page: int = 100,
+) -> list[PullRequest]:
+  params = {
+    'state': 'all',
+    'page': page,
+    'per_page': per_page,
+  }
+
+  url = prepare_url(repository_url, 'pulls')
+  headers = prepare_headers()
+
+  response = requests.get(url, headers=headers, params=params)
+  data = response.json()
+
+  return [
+    PullRequest(
+      id=item['id'],
+      title=item['title'],
+      body=item['body'],
+      state=item['state'],
+      created_at=item['created_at'],
+      closed_at=item['closed_at'],
+      merged_at=item['merged_at']
+    ) for item in data
+  ]
 
 """
 Fetch issues from Github.
@@ -121,6 +150,7 @@ def fetch_tags(
 
   response = requests.get(url, headers=headers, params=params)
   data = response.json()
+  print(data)
 
   return [
     Tag(
@@ -141,7 +171,6 @@ def fetch_data(repository_url, fetcher):
 
     while True:
       batch = fetcher(repository_url, page)
-      print(len(batch))
       file.writerows(batch)
 
       fetched = fetched + len(batch)
