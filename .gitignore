@@ -4,3 +4,4 @@ assets/
 .idea
 _satd_detector/satd_detector.pt
 _satd_detector/fasttext_word_embeddings.bin/fasttext_issue_300.bin
+venv/
